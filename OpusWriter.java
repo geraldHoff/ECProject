@@ -66,7 +66,7 @@ public class OpusWriter {
       String sentence = "";
       while(!sentence.endsWith(".")) { //Stop when the sentence has a '.'
          sentence = sentence + getNextChar(sentence);
-         System.out.println(sentence);
+         //System.out.println(sentence);
       }
       return sentence;
    }

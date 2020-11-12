@@ -30,28 +30,25 @@ public class Main extends Application {
         );
         ImageView paperView = new ImageView(aiBackground);
         paperView.setPreserveRatio(true);
-        paperView.setScaleX(0.5);
-        paperView.setScaleY(0.5);
-        paperView.setX(-700);
-        paperView.setY(-420);
+
 
         //create textField so that the user can choose the text.
         TextField textField = new TextField();
         textField.setTranslateY(30);
-        textField.setText("text name");
+        textField.setText("PP");
 
         Font font = Font.font("Verdana", FontWeight.BLACK, FontPosture.REGULAR, 20);
 
         //displays the newly created sentence when the button is clicked.
         Label sentence = new Label("");
-        sentence.setTextFill(Color.BLUE);
+        sentence.setTextFill(Color.SILVER);
         sentence.setFont(font);
-        sentence.setTranslateY(460);
-        sentence.setTranslateX(440);
+        sentence.setTranslateY(520);
+        sentence.setTranslateX(650);
 
         Label hashLabel = new Label("HollyWood");
         hashLabel.setFont(font);
-        hashLabel.setTextFill(Color.BLACK);
+        hashLabel.setTextFill(Color.SILVER);
         hashLabel.setTranslateY(90);
         hashLabel.setTranslateX(10);
 
@@ -65,9 +62,9 @@ public class Main extends Application {
                 String sentenceString = writer.makeSentence();
 
                 //wraps String around with a new line to make it fit on the screen if too long.
-                if (sentenceString.length() > 75){
-                    int spaceChar = 75;
-                    while(sentenceString.charAt(spaceChar) == ' ' || spaceChar > 90){
+                if (sentenceString.length() > 50){
+                    int spaceChar = 50;
+                    while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 60){
                         spaceChar++;
                     }
                     sentenceString =
@@ -77,7 +74,7 @@ public class Main extends Application {
                 hashLabel.setText(writer.getString());
             }
             catch(Exception exception){
-                System.out.println("File not found, probably");
+                sentence.setText("walter");
             }
         });
 

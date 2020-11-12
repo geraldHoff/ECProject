@@ -2,7 +2,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /*
@@ -26,66 +28,118 @@ Maybe in the future with more time on my hands, I will make AIGO faster and more
 */
 
 public class OpusWriter {
-   HashMap<String, ArrayList<Character>> strCharPairs;   //Hashmap, with string keys and arraylists as items
-   int level;
+   HashMap<String, ArrayList<Character>> wordPairs;   //Hashmap, with string keys and arraylists as items
+   int level;  //K level
    
-   //IT IS ASSUMED K IS A VALUE GREATER THAN OR EQUAL TO 1
-   //IT IS ASSUMED THE STRING fName IS IN ["textname.txt"] FORMAT AND THE FILE IS IN THE DIRECTORY WITH THE PROGRAM
-   public OpusWriter(String fName, int k) throws Exception  {  //Throwing an exception because of files. Too lazy to do a try catch
-      File inputF = new File(fName);   //Setting up the file for reading
-      Scanner fReader = new Scanner(inputF);
-      String fullTxt = ""; //This is where the full text will be stored
-      level = k;  //K level
-      
-      while(fReader.hasNextLine())  {  //Take the entire file and store it in the string
-         fullTxt = fullTxt + fReader.nextLine()+" ";
-      }
-      strCharPairs = new HashMap<>(fullTxt.length()*2);  //Set up our hashmap with a size twice that of the full text length
-      while(fullTxt.length() > level)  {  //This is the most disgusting thing I've ever written, and even I'm confused how this works 2 years later. Tried my best to fix it
-                                          //Essentially, the next two while loops take apart the string piece by piece and storing data in the hashmap
-         String baseString = fullTxt.substring(fullTxt.length()-level,fullTxt.length()-1);   //System.out.println(baseString); DEBUG
-         char ch = fullTxt.charAt(fullTxt.length()-1);
-         fullTxt = fullTxt.substring(0,fullTxt.length()-1);
-         if(!strCharPairs.containsKey(baseString)) //Check to see if the key is already in the hashmap
-            strCharPairs.put(baseString,new ArrayList<Character>()); //If not, add it
-         ArrayList<Character> chList = strCharPairs.get(baseString);
-         chList.add(ch);   //Adding the character to the arraylist
-      }
-      while(fullTxt.length() >= 1) {   //Handling remainder of text when it is less than the K level
-         String baseString = fullTxt.substring(0,fullTxt.length()-1);   //System.out.println(baseString); DEBUG
-         char ch = fullTxt.charAt(fullTxt.length()-1);
-         fullTxt = fullTxt.substring(0,fullTxt.length()-1);
-         if(!strCharPairs.containsKey(baseString))
-            strCharPairs.put(baseString,new ArrayList<Character>());
-         ArrayList<Character> chList = strCharPairs.get(baseString);
-         chList.add(ch);
-      }
+   /**
+   *  Constructs the Opus Writer, where the hash map of strings paired with characters is created, and the K level is set. It is assumed
+   *  that all inputs are valid. Note that once the Opus Writer is initialized with a chosen file, it cannot create another hash map for another
+   *  text document, and thus, each Opus Writer is entirely unique to its text. Nor can a new k level be set once the writer is initialized
+   *  @author Anthony Nguyen ~ Red
+   *  @param fName of the text file, in "[name].txt" format. Does not check if the file is in the directory and is handled elsewhere
+   *  @param k level determines how deep AIGO analyzes a string, corresponding to how long the pattern of strings it examines. A higher k level increases accuracy of sentences but time drastically increases
+   *  @since 11092020
+   */
+   public OpusWriter(String fName, int k) throws Exception  {  //Throws exception if the file is not found. It is assumed that the filename is valid however
+      wordPairs = createHashMap(fName,k);
+      //remove("",' ');
+      level = k;
    }
-   
-   public String makeSentence()  {  //Make sentence
+   /**
+   *  Constructs a sentence from pairs of strings and characters in the hash map, taking a k length segment from the current sentence, comparing it to the 
+   *  hashmap, and finding a random character that would likely follow the string segment. Thus overtime, the text will begin to resemble the original text with a sufficient k level
+   *  @return the complete sentence
+   */
+   public String makeSentence()   {
       String sentence = "";
-      while(!sentence.endsWith(".")) { //Stop when the sentence has a '.'
-         sentence = sentence + getNextChar(sentence);
-         //System.out.println(sentence);
+      int length = 50;
+      while(!sentence.endsWith("."))   {
+         //System.out.println("CURRENT SENTENCE   :  " + sentence); //Debug print line, prints out the sentence as it is being built
+         sentence = sentence + getNextLetter(grabLast(sentence));
       }
       return sentence;
    }
    
-   private char chooseRandom(ArrayList<Character> arr) { //Randomly chooses the next character value to append to the sentence from the arraylist
-      if(arr == null)
-         return ' ';
-      Random rand = new Random();
-      int index = rand.nextInt(arr.size());
-      return arr.get(index);
+   /**
+   @return string representation of the hashmap
+   */
+   public String getString()  {
+      String hashMap = "";
+      for(Map.Entry entry : wordPairs.entrySet())  {
+         hashMap += entry.getKey() + "   :   " + entry.getValue() + "\n";
+      }
+      return hashMap;
    }
    
-   private String getBaseString(String str)  {  //takes the last few characters of the sentence AIGO is making to compare it against the hashmap
-      if(str.length() < level)
+   
+   private HashMap<String, ArrayList<Character>> createHashMap(String fileName,int k)  throws Exception  {
+      File inputFile = new File(fileName);
+      HashMap<String,ArrayList<Character>> hMap = new HashMap<>();
+      Scanner fileReader = new Scanner(inputFile);
+      while(fileReader.hasNextLine())   {
+         String textStr = cleanText(fileReader.nextLine());
+         //System.out.println("NEXT LINE :  " + textStr);  //Debug print statement, shows the next line the scanner read after being run through the cleanText method
+         String baseString;
+         char nextChar;
+         int i = textStr.length()-1;
+         int j;
+         if(textStr.length()-(k+1)<0)
+            j=0;
+         else
+            j=textStr.length()-(k+1);
+         while(j<=i) {
+            nextChar = textStr.charAt(i);
+            baseString=textStr.substring(j,i);
+            addToHashMap(baseString,nextChar,hMap); 
+            //System.out.println("ADDED TO HASHMAP : " + baseString + ", " + nextChar);   //Debug print line when new element is added
+            i--;
+            if(j>0)
+               j--;
+         }
+      }
+      return hMap;
+   }
+   
+   private String grabLast(String str) {
+      if (str.length() < level+1)  {
+         //System.out.println("GRABBING LAST STRING : " + str);   //Debug print line when getting last k characters in current sentence
          return str;
-      return str.substring(str.length()-level+1,str.length());
+      }
+      else  {
+         //System.out.println("GRABBING LAST STRING : " + str.substring(str.length()-level,str.length()));  //Debug print line when getting last k characters in current sentence
+         return str.substring(str.length()-level,str.length());
+      }
    }
    
-   private char getNextChar(String str) { //Getting the next character using a combo of the two methods above
-      return chooseRandom(strCharPairs.get(getBaseString(str)));
+   private char getNextLetter(String str) {
+      //System.out.println("GETTING NEXT LETTER FOR STRING : " +  str);  //Debug print line when getting next character
+      ArrayList<Character> charList = wordPairs.get(str);
+      if(charList == null) {
+         //System.out.println("ERROR CANNOT FIND NEXT LETTER FOR STRING \"" + str +"\""); //Debug print line for when AIGO cannot any characters for the string given
+         return '.';
+      }
+      int i = (new Random()).nextInt(charList.size());
+      return charList.get(i);
+   }
+   
+   private String cleanText(String str)   {  //Given a string, all nonprintable, non ASCII, control characters will be removed from the string
+      str=str.replaceAll("\\p{Cntrl}", " "); //Replace all control characters with an empty space
+      str=str.replaceAll("[^\\p{Print}]", "~"); //Replace all nonprintable characters with ~
+      return str;
+   }
+   
+   private void addToHashMap(String baseStr,char suffix,HashMap<String,ArrayList<Character>> hMap) {
+      if(hMap.containsKey(baseStr))  {
+         (hMap.get(baseStr)).add(suffix);
+      }  else  {
+         hMap.put(baseStr, new ArrayList<>(Arrays.asList(suffix)));
+      }
+   }
+   
+   private void remove(String key, char value)  {
+      ArrayList<Character> characterArr = wordPairs.get(key);
+      if(characterArr != null)   {
+         characterArr.removeAll(Arrays.asList(value));
+      }
    }
 }

@@ -52,7 +52,6 @@ public class OpusWriter {
    */
    public String makeSentence()   {
       String sentence = "";
-      int length = 50;
       while(!sentence.endsWith("."))   {
          //System.out.println("CURRENT SENTENCE   :  " + sentence); //Debug print line, prints out the sentence as it is being built
          sentence = sentence + getNextLetter(grabLast(sentence));

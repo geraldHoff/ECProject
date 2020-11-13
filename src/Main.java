@@ -46,40 +46,27 @@ public class Main extends Application {
         sentence.setTranslateY(520);
         sentence.setTranslateX(650);
 
-        Label hashLabel = new Label("HollyWood");
-        hashLabel.setFont(font);
-        hashLabel.setTextFill(Color.SILVER);
-        hashLabel.setTranslateY(90);
-        hashLabel.setTranslateX(10);
-
         //button for generating new sentence.
         Button startButton = new Button("new sentence");
         startButton.setLayoutY(60);
         startButton.setOnAction(e -> {
-            try {
-                //gets file based on the input of the textField.
-                OpusWriter writer = new OpusWriter("src/texts/" + textField.getText() + ".txt", 5);
-                String sentenceString = writer.makeSentence();
 
-                //wraps String around with a new line to make it fit on the screen if too long.
-                if (sentenceString.length() > 50){
-                    int spaceChar = 50;
-                    while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 60){
-                        spaceChar++;
-                    }
-                    sentenceString =
-                            sentenceString.substring(0, spaceChar) + "\n" + sentenceString.substring(spaceChar);
-                }
-                sentence.setText(sentenceString);
-                hashLabel.setText(writer.getString());
-            }
-            catch(Exception exception){
+            try {
+                //create new thread to do call the OpusWriter
+                WriterThread writerThread = new WriterThread(textField.getText(), 5);
+                String sentenceString = writerThread.call();
+
+                //format the string so that it will fit on the screen
+                sentence.setText(format(sentenceString));
+
+            } catch (Exception exception) {
+                //walter
                 sentence.setText("walter");
             }
         });
 
         //creates root node of graphics objects, than passes them to new scene.
-        Group root = new Group(paperView, startButton, textField, sentence, hashLabel);
+        Group root = new Group(paperView, startButton, textField, sentence);
         Scene scene = new Scene(root, 1200, 600);
 
         //window gets scene, and is shown.
@@ -88,4 +75,49 @@ public class Main extends Application {
         window.setTitle("Grand Opus");
         window.show();
     }
+
+    /**
+     * Creates new lines in the string so that it can fit on the screen
+     * @param sentenceString, The sentence, a String, to be formatted.
+     * @return The formatted string.
+     */
+    String format(String sentenceString){
+        //wraps String around with a new line to make it fit on the screen if too long.
+        int sentenceLength = sentenceString.length();
+        if (sentenceLength > 50){
+            int spaceChar = 50;
+            while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 60){
+                spaceChar++;
+            }
+            sentenceString =
+                    sentenceString.substring(0, spaceChar) + "\n" + sentenceString.substring(spaceChar);
+        }
+        if (sentenceLength > 100){
+            int spaceChar = 100;
+            while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 110){
+                spaceChar++;
+            }
+            sentenceString =
+                    sentenceString.substring(0, spaceChar) + "\n" + sentenceString.substring(spaceChar);
+        }
+        if (sentenceLength > 150){
+            int spaceChar = 150;
+            while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 160){
+                spaceChar++;
+            }
+            sentenceString =
+                    sentenceString.substring(0, spaceChar) + "\n" + sentenceString.substring(spaceChar);
+        }
+        if (sentenceLength > 200){
+            int spaceChar = 200;
+            while(sentenceString.charAt(spaceChar) != ' ' || spaceChar > 210){
+                spaceChar++;
+            }
+            sentenceString =
+                    sentenceString.substring(0, spaceChar) + "\n" + sentenceString.substring(spaceChar);
+        }
+        return sentenceString;
+    }
 }
+
+
